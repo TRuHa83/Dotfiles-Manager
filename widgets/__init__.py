@@ -1,0 +1,1 @@
+from .task_widget import Ui_Form as UiConjuntoWidget
