@@ -1,0 +1,8 @@
+I'm going to provide you with a configuration file, I need you to classify it by applications.
+If you don't know the file, mark it as unknown.
+Generate a JSON with the following data:
+APPLICATION, DESCRIPTION, CATEGORY, LEVEL and PATH
+Level represents the importance that the file may have for the user.
+Where 0 is very little and 5 is very important.
+
+The file is: {item}
