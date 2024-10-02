@@ -31,15 +31,15 @@ def configure_logging(level=log.INFO):
 
 def check_esencials_files():
     if not os.path.isdir(config_folder):
-        log.error("No se encuentra la carpeta de configuración")
+        log.error("Configuration folder not found")
         return False
 
     if not os.path.isfile(f"{config_folder}/config.json"):
-        log.error("No se encuentra el archivo config.json")
+        log.error("The config.json file cannot be found")
         return False
 
     if not os.path.isfile(f"{config_folder}/tasks.json"):
-        log.error("No se encuentra el archivo tasks.json")
+        log.error("The tasks.json file cannot be found")
         return False
 
     return True
@@ -53,14 +53,14 @@ def get_db_version():
         version = cursor.fetchone()[0]
 
     except sqlite3.Error as e:
-        log.error(f"Error al conectar con la base de datos: {e}")
+        log.error(f"Error connecting to database: {e}")
         version = None
 
     finally:
         if conn:
             conn.close()
 
-    log.info(f"Versión de la base de datos: {version}")
+    log.info(f"Database version: {version}")
     return version
 
 
@@ -71,7 +71,7 @@ def get_last_update():
         return data["last_update"]
 
     except (FileNotFoundError, json.JSONDecodeError) as e:
-        log.error(f"Error al manejar el archivo config.json: {e}")
+        log.error(f"Error handling config.json file: {e}")
         return None
 
 
@@ -82,7 +82,7 @@ def get_last_update_db():
         return data["last_update_db"]
 
     except (FileNotFoundError, json.JSONDecodeError) as e:
-        log.error(f"Error al manejar el archivo config.json: {e}")
+        log.error(f"Error handling config.json file: {e}")
         return None
 
 
@@ -98,11 +98,11 @@ def check_new_version():
         with open(f'{config_folder}/config.json', 'w') as f:
             f.write(json.dumps(data, indent=2))
 
-        log.debug(f"Última actualización: {time_now}")
+        log.debug(f"Last update: {time_now}")
         return time_now
 
     except (FileNotFoundError, json.JSONDecodeError) as e:
-        log.error(f"Error al manejar el archivo config.json: {e}")
+        log.error(f"Error handling config.json file: {e}")
         return None
 
 
@@ -119,11 +119,11 @@ def check_db_new_version():
         with open(f'{config_folder}/config.json', 'w') as f:
             f.write(json.dumps(data, indent=2))
 
-        log.debug(f"Última actualización de la base de datos: {time_now}")
+        log.debug(f"Last database update: {time_now}")
         return time_now
 
     except (FileNotFoundError, json.JSONDecodeError) as e:
-        log.error(f"Error al manejar el archivo config.json: {e}")
+        log.error(f"Error handling config.json file: {e}")
         return None
 
 
@@ -206,8 +206,8 @@ class TaskWidget(QWidget, Ui_Form):
 class MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self):
         super().__init__()
-        log.info("Inicializando MainWindow")
-        log.debug("Configurando variables iniciales")
+        log.info("Initializing MainWindow")
+        log.debug("Setting initial variables")
         self.applications = None
         self.default_icon = None
         self.timestamp = None
@@ -219,20 +219,20 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.dotfiles = []
         self.widgets = []
 
-        log.debug("Configurando interfaz")
+        log.debug("Configuring interface")
         self.setupUi(self)
         self.setWindowTitle("Dotfile Manager")
         self.setFixedSize(800, 500)
 
         self.menu_full.setHidden(True)
 
-        log.info("Version actual: %s", __version__)
+        log.info("Current version: %s", __version__)
         self.version.setText(__version__)
         self.last_update_version.setText(get_last_update())
         self.db_version.setText(get_db_version())
         self.last_update_version_db.setText(get_last_update_db())
 
-        log.debug("Conectando señales")
+        log.debug("Connecting signals")
         self.check_version.clicked.connect(self.new_version)
         self.check_db_version.clicked.connect(self.new_db_version)
 
@@ -271,7 +271,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.last_update_version_db.setText(check_db_new_version())
 
     def switch_homePage(self):
-        log.debug("Página de inicio")
+        log.debug("Home Page")
         self.stackedWidget.setCurrentIndex(0)
 
     def switch_backupPage(self):
@@ -279,11 +279,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.stackedWidget.setCurrentIndex(5)
 
         else:
-            log.debug("Página de tareas")
+            log.debug("Task page")
             self.stackedWidget.setCurrentIndex(1)
 
             if not self.task_scrollarea.layout().isEmpty():
-                log.debug("Limpiando tareas")
+                log.debug("Cleaning up tasks")
                 for widget in self.widgets:
                     self.task_scrollarea.layout().removeWidget(widget)
                     widget.deleteLater()
@@ -296,10 +296,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     tasks = json.load(file)
 
             except (FileNotFoundError, json.JSONDecodeError) as e:
-                log.error(f"Error al manejar el archivo tasks.json: {e}")
+                log.error(f"Error handling tasks.json file: {e}")
                 tasks = {}
 
-            log.debug("Cargando tareas")
+            log.debug("Loading tasks")
             for task in tasks:
                 data = {task: tasks[task]}
                 self.add_task(data)
@@ -307,35 +307,35 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.task_scrollarea.layout().addStretch()
 
     def switch_reportPage(self):
-        log.debug("Página de reportes")
+        log.debug("Report page")
         self.stackedWidget.setCurrentIndex(2)
 
     def switch_settingsPage(self):
-        log.debug("Página de configuración")
+        log.debug("Settings page")
         self.stackedWidget.setCurrentIndex(3)
 
     def switch_aboutPage(self):
-        log.debug("Página acerca de...")
+        log.debug("About page")
         self.stackedWidget.setCurrentIndex(4)
 
     def switch_taskPage(self):
-        log.debug("Creando tarea")
+        log.debug("Creating task")
         self.stackedWidget.setCurrentIndex(5)
         self.state_task = True
-        log.debug("Estado de tarea pasa a %s", self.state_task)
+        log.debug("Task status changes to %s", self.state_task)
 
         self.load_apps()
 
     def add_task(self, task):
         self.task = task
-        log.debug("Añadiendo tarea: %s", task)
+        log.debug("Adding task: %s", task)
 
         widget = TaskWidget(self, main_window=self)
         self.widgets.append(widget)
         self.task_scrollarea.layout().addWidget(widget)
 
     def remove_task(self, task):
-        log.info("Eliminando tarea: %s", task)
+        log.info("Deleting task: %s", task)
 
         try:
             with open(f'{config_folder}/tasks.json', 'r+') as file:
@@ -346,7 +346,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 file.truncate()
 
         except (FileNotFoundError, json.JSONDecodeError) as e:
-            log.error(f"Error al manejar el archivo tasks.json: {e}")
+            log.error(f"Error handling tasks.json file: {e}")
 
         self.switch_backupPage()
 
@@ -360,10 +360,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.apps_list.addItem(item)
 
     def change_level(self, value):
-        log.debug("Cambiando nivel de prioridad a %s", value)
+        log.debug("Changing priority level to %s", value)
         app_newlevel = search.list_apps(self.user_files, self.level_spin.value())
 
-        log.debug("Actualizando aplicaciones a nuevo nivel")
+        log.debug("Upgrading applications to a new level")
         items = {}
         for i in range(self.apps_list.count()):
             item = self.apps_list.item(i)
@@ -387,17 +387,17 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.level_value = value
 
     def load_apps(self):
-        log.debug("Cargando aplicaciones")
+        log.debug("Loading applications")
         self.apps_list.clear()
 
         self.user_files, self.user_folders, self.config_files, self.config_folders = search.dotfiles()
         self.applications = search.list_apps(self.user_files, self.level_spin.value())
 
-        log.debug("Aplicaciones cargadas: %s", self.applications.keys())
+        log.debug("Loaded applications: %s", self.applications.keys())
         self.addAppsToList(self.applications.keys())
 
     def list_dotfiles(self):
-        log.debug("Listando archivos de configuración")
+        log.debug("Listing configuration files")
         self.dotfiles_list.clear()
         self.dotfiles.clear()
 
@@ -410,15 +410,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     self.dotfiles_list.addItem(dotfile)
                     self.dotfiles.append(file["path"])
 
-        log.debug("Archivos de configuración seleccionados: %s", self.dotfiles)
+        log.debug("Selected configuration files: %s", self.dotfiles)
 
     def select_icon(self, application):
         icon = QIcon()
 
-        log.debug("Buscando icono para %s", application)
+        log.debug("Looking for icon for %s", application)
         img = search.icons(application.lower())
         if img is None:
-            log.debug("Icono no encontrado, se establece icono por defecto")
+            log.debug("Icon not found, default icon set")
             img = work_folder + "/assets/icon24x24.png"
 
         self.default_icon = img
@@ -428,24 +428,24 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.button_icon.setIconSize(QSize(48, 48))
 
     def select_folder(self):
-        log.debug("Seleccionar carpeta")
-        folder = QFileDialog.getExistingDirectory(self, "Seleccionar Carpeta")
+        log.debug("Select folder")
+        folder = QFileDialog.getExistingDirectory(self, "Select Folder")
         if folder:
             self.folder_task.setText(folder)
-            log.debug("Carpeta seleccionada: %s", folder)
+            log.debug("Selected folder: %s", folder)
 
     def select_backup_mode(self):
-        log.debug("Seleccionar modo de backup")
+        log.debug("Select backup mode")
 
     def select_git_mode(self):
-        log.debug("Seleccionar modo de git")
+        log.debug("Select git mode")
 
     def clear_fields(self):
-        log.debug("Limpiando campos")
+        log.debug("Clearing fields")
         self.timestamp = None
         self.state_task = False
 
-        log.debug("Estado de tarea pasa a %s", self.state_task)
+        log.debug("Task status changes to %s", self.state_task)
 
         self.title.setText("New Task")
 
@@ -466,17 +466,17 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.dotfiles_list.clear()
 
     def cancel_task(self):
-        log.info("Tarea cancelada")
+        log.info("Task cancelled")
         self.clear_fields()
         self.switch_backupPage()
 
     def save_task(self):
-        log.info("Guardando tarea")
+        log.info("Saving task")
         if self.timestamp is None:
             self.timestamp = QDateTime.currentDateTime().toSecsSinceEpoch()
 
         log.debug("Timestamp: %s", self.timestamp)
-        log.debug("Recopilando datos")
+        log.debug("Collecting data")
 
         name = self.name_task.text()
         folder = self.folder_task.text()
@@ -511,9 +511,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 file.truncate()
 
         except (FileNotFoundError, json.JSONDecodeError) as e:
-            log.error(f"Error al manejar el archivo tasks.json: {e}")
+            log.error(f"Error handling tasks.json file: {e}")
 
-        log.info("Tarea guardada")
+        log.info("Task saved")
 
         self.clear_fields()
         self.switch_backupPage()
