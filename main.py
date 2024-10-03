@@ -274,53 +274,69 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.last_update_version_db.setText(check_db_new_version())
 
     def switch_homePage(self):
-        log.debug("Home Page")
-        self.load_info()
-        self.stackedWidget.setCurrentIndex(0)
+        if self.state != 'home':
+            self.state = 'home'
+            log.debug("Home Page")
+
+            self.load_info()
+
+            self.stackedWidget.setCurrentIndex(0)
 
     def switch_backupPage(self):
-        if self.state_task:
-            self.stackedWidget.setCurrentIndex(5)
+        if self.state != 'backup':
+            self.state = 'backup'
 
-        else:
-            log.debug("Task page")
-            self.stackedWidget.setCurrentIndex(1)
+            if self.state_task:
+                self.stackedWidget.setCurrentIndex(5)
 
-            if not self.task_scrollarea.layout().isEmpty():
-                log.debug("Cleaning up tasks")
-                for widget in self.widgets:
-                    self.task_scrollarea.layout().removeWidget(widget)
-                    widget.deleteLater()
+            else:
+                log.debug("Task page")
+                self.stackedWidget.setCurrentIndex(1)
 
-                self.task_scrollarea.layout().removeItem(self.task_scrollarea.layout().itemAt(0))
-                self.widgets.clear()
+                if not self.task_scrollarea.layout().isEmpty():
+                    log.debug("Cleaning up tasks")
+                    for widget in self.widgets:
+                        self.task_scrollarea.layout().removeWidget(widget)
+                        widget.deleteLater()
 
-            try:
-                with open(f"{config_folder}/tasks.json", 'r') as file:
-                    tasks = json.load(file)
+                    self.task_scrollarea.layout().removeItem(self.task_scrollarea.layout().itemAt(0))
+                    self.widgets.clear()
 
-            except (FileNotFoundError, json.JSONDecodeError) as e:
-                log.error(f"Error handling tasks.json file: {e}")
-                tasks = {}
+                try:
+                    with open(f"{config_folder}/tasks.json", 'r') as file:
+                        tasks = json.load(file)
 
-            log.debug("Loading tasks")
-            for task in tasks:
-                data = {task: tasks[task]}
-                self.add_task(data)
+                except (FileNotFoundError, json.JSONDecodeError) as e:
+                    log.error(f"Error handling tasks.json file: {e}")
+                    tasks = {}
 
-            self.task_scrollarea.layout().addStretch()
+                log.debug("Loading tasks")
+                for task in tasks:
+                    data = {task: tasks[task]}
+                    self.add_task(data)
+
+                self.task_scrollarea.layout().addStretch()
 
     def switch_reportPage(self):
-        log.debug("Report page")
-        self.stackedWidget.setCurrentIndex(2)
+        if self.state != 'report':
+            self.state = 'report'
+            log.debug("Report page")
+
+            self.stackedWidget.setCurrentIndex(2)
 
     def switch_settingsPage(self):
-        log.debug("Settings page")
-        self.stackedWidget.setCurrentIndex(3)
+        if self.state != 'settings':
+            self.state = 'settings'
+            log.debug("Settings page")
+
+            self.stackedWidget.setCurrentIndex(3)
 
     def switch_aboutPage(self):
-        log.debug("About page")
-        self.stackedWidget.setCurrentIndex(4)
+        if self.state != 'about':
+            self.state = 'about'
+            log.debug("About page")
+
+            self.stackedWidget.setCurrentIndex(4)
 
     def switch_taskPage(self):
         log.debug("Creating task")
