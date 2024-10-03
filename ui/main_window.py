@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'main_window.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.7.2
+## Created by: Qt User Interface Compiler version 6.7.3
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -16,11 +16,12 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QAbstractItemView, QAbstractScrollArea, QApplication, QFrame,
-    QGridLayout, QGroupBox, QHBoxLayout, QLabel,
-    QLineEdit, QListView, QListWidget, QListWidgetItem,
-    QMainWindow, QPushButton, QRadioButton, QScrollArea,
-    QSizePolicy, QSpacerItem, QSpinBox, QStackedWidget,
-    QStatusBar, QTabWidget, QVBoxLayout, QWidget)
+    QGridLayout, QGroupBox, QHBoxLayout, QHeaderView,
+    QLabel, QLineEdit, QListView, QListWidget,
+    QListWidgetItem, QMainWindow, QPushButton, QRadioButton,
+    QScrollArea, QSizePolicy, QSpacerItem, QSpinBox,
+    QStackedWidget, QStatusBar, QTabWidget, QTableWidget,
+    QTableWidgetItem, QVBoxLayout, QWidget)
 import ui.recursos_rc
 
 class Ui_MainWindow(object):
@@ -324,18 +325,18 @@ class Ui_MainWindow(object):
         self.horizontalLayout_3.setObjectName(u"horizontalLayout_3")
         self.verticalLayout_5 = QVBoxLayout()
         self.verticalLayout_5.setObjectName(u"verticalLayout_5")
-        self.label = QLabel(self.groupBox)
-        self.label.setObjectName(u"label")
+        self.total_tasks = QLabel(self.groupBox)
+        self.total_tasks.setObjectName(u"total_tasks")
         font1 = QFont()
         font1.setPointSize(16)
         font1.setBold(True)
-        self.label.setFont(font1)
-        self.label.setStyleSheet(u"QLabel {\n"
+        self.total_tasks.setFont(font1)
+        self.total_tasks.setStyleSheet(u"QLabel {\n"
 "	color: #5985E1;\n"
 "}")
-        self.label.setAlignment(Qt.AlignCenter)
+        self.total_tasks.setAlignment(Qt.AlignCenter)
 
-        self.verticalLayout_5.addWidget(self.label)
+        self.verticalLayout_5.addWidget(self.total_tasks)
 
         self.label_2 = QLabel(self.groupBox)
         self.label_2.setObjectName(u"label_2")
@@ -358,15 +359,15 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_6 = QVBoxLayout()
         self.verticalLayout_6.setObjectName(u"verticalLayout_6")
-        self.label_3 = QLabel(self.groupBox)
-        self.label_3.setObjectName(u"label_3")
-        self.label_3.setFont(font1)
-        self.label_3.setStyleSheet(u"QLabel {\n"
+        self.enabled_tasks = QLabel(self.groupBox)
+        self.enabled_tasks.setObjectName(u"enabled_tasks")
+        self.enabled_tasks.setFont(font1)
+        self.enabled_tasks.setStyleSheet(u"QLabel {\n"
 "	color: #5985E1;\n"
 "}")
-        self.label_3.setAlignment(Qt.AlignCenter)
+        self.enabled_tasks.setAlignment(Qt.AlignCenter)
 
-        self.verticalLayout_6.addWidget(self.label_3)
+        self.verticalLayout_6.addWidget(self.enabled_tasks)
 
         self.label_4 = QLabel(self.groupBox)
         self.label_4.setObjectName(u"label_4")
@@ -387,15 +388,15 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_7 = QVBoxLayout()
         self.verticalLayout_7.setObjectName(u"verticalLayout_7")
-        self.label_5 = QLabel(self.groupBox)
-        self.label_5.setObjectName(u"label_5")
-        self.label_5.setFont(font1)
-        self.label_5.setStyleSheet(u"QLabel {\n"
+        self.disabled_tasks = QLabel(self.groupBox)
+        self.disabled_tasks.setObjectName(u"disabled_tasks")
+        self.disabled_tasks.setFont(font1)
+        self.disabled_tasks.setStyleSheet(u"QLabel {\n"
 "	color: #5985E1;\n"
 "}")
-        self.label_5.setAlignment(Qt.AlignCenter)
+        self.disabled_tasks.setAlignment(Qt.AlignCenter)
 
-        self.verticalLayout_7.addWidget(self.label_5)
+        self.verticalLayout_7.addWidget(self.disabled_tasks)
 
         self.label_6 = QLabel(self.groupBox)
         self.label_6.setObjectName(u"label_6")
@@ -416,15 +417,15 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_8 = QVBoxLayout()
         self.verticalLayout_8.setObjectName(u"verticalLayout_8")
-        self.label_7 = QLabel(self.groupBox)
-        self.label_7.setObjectName(u"label_7")
-        self.label_7.setFont(font1)
-        self.label_7.setStyleSheet(u"QLabel {\n"
+        self.total_storage = QLabel(self.groupBox)
+        self.total_storage.setObjectName(u"total_storage")
+        self.total_storage.setFont(font1)
+        self.total_storage.setStyleSheet(u"QLabel {\n"
 "	color: #5985E1;\n"
 "}")
-        self.label_7.setAlignment(Qt.AlignCenter)
+        self.total_storage.setAlignment(Qt.AlignCenter)
 
-        self.verticalLayout_8.addWidget(self.label_7)
+        self.verticalLayout_8.addWidget(self.total_storage)
 
         self.label_8 = QLabel(self.groupBox)
         self.label_8.setObjectName(u"label_8")
@@ -456,8 +457,17 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_18.addWidget(self.label_21)
 
-        self.list_tasks = QListView(self.groupBox_2)
+        self.list_tasks = QTableWidget(self.groupBox_2)
+        if (self.list_tasks.columnCount() < 3):
+            self.list_tasks.setColumnCount(3)
+        __qtablewidgetitem = QTableWidgetItem()
+        self.list_tasks.setHorizontalHeaderItem(0, __qtablewidgetitem)
+        __qtablewidgetitem1 = QTableWidgetItem()
+        self.list_tasks.setHorizontalHeaderItem(1, __qtablewidgetitem1)
+        __qtablewidgetitem2 = QTableWidgetItem()
+        self.list_tasks.setHorizontalHeaderItem(2, __qtablewidgetitem2)
         self.list_tasks.setObjectName(u"list_tasks")
+        self.list_tasks.setEditTriggers(QAbstractItemView.NoEditTriggers)
 
         self.verticalLayout_18.addWidget(self.list_tasks)
 
@@ -739,7 +749,7 @@ class Ui_MainWindow(object):
         self.task_area.setWidgetResizable(True)
         self.task_scrollarea = QWidget()
         self.task_scrollarea.setObjectName(u"task_scrollarea")
-        self.task_scrollarea.setGeometry(QRect(0, 0, 556, 391))
+        self.task_scrollarea.setGeometry(QRect(0, 0, 100, 30))
         self.verticalLayout_19 = QVBoxLayout(self.task_scrollarea)
         self.verticalLayout_19.setSpacing(6)
         self.verticalLayout_19.setObjectName(u"verticalLayout_19")
@@ -1205,33 +1215,33 @@ class Ui_MainWindow(object):
 #endif // QT_CONFIG(statustip)
         self.groupBox.setTitle("")
 #if QT_CONFIG(statustip)
-        self.label.setStatusTip(QCoreApplication.translate("MainWindow", u"Total Tasks", None))
+        self.total_tasks.setStatusTip(QCoreApplication.translate("MainWindow", u"Total Tasks", None))
 #endif // QT_CONFIG(statustip)
-        self.label.setText(QCoreApplication.translate("MainWindow", u"0", None))
+        self.total_tasks.setText(QCoreApplication.translate("MainWindow", u"0", None))
 #if QT_CONFIG(statustip)
         self.label_2.setStatusTip(QCoreApplication.translate("MainWindow", u"Total Tasks", None))
 #endif // QT_CONFIG(statustip)
         self.label_2.setText(QCoreApplication.translate("MainWindow", u"Total Tasks", None))
 #if QT_CONFIG(statustip)
-        self.label_3.setStatusTip(QCoreApplication.translate("MainWindow", u"Enabled Tasks", None))
+        self.enabled_tasks.setStatusTip(QCoreApplication.translate("MainWindow", u"Enabled Tasks", None))
 #endif // QT_CONFIG(statustip)
-        self.label_3.setText(QCoreApplication.translate("MainWindow", u"0", None))
+        self.enabled_tasks.setText(QCoreApplication.translate("MainWindow", u"0", None))
 #if QT_CONFIG(statustip)
         self.label_4.setStatusTip(QCoreApplication.translate("MainWindow", u"Enabled Tasks", None))
 #endif // QT_CONFIG(statustip)
         self.label_4.setText(QCoreApplication.translate("MainWindow", u"Enabled Tasks", None))
 #if QT_CONFIG(statustip)
-        self.label_5.setStatusTip(QCoreApplication.translate("MainWindow", u"Disabled Tasks", None))
+        self.disabled_tasks.setStatusTip(QCoreApplication.translate("MainWindow", u"Disabled Tasks", None))
 #endif // QT_CONFIG(statustip)
-        self.label_5.setText(QCoreApplication.translate("MainWindow", u"0", None))
+        self.disabled_tasks.setText(QCoreApplication.translate("MainWindow", u"0", None))
 #if QT_CONFIG(statustip)
         self.label_6.setStatusTip(QCoreApplication.translate("MainWindow", u"Disabled Tasks", None))
 #endif // QT_CONFIG(statustip)
         self.label_6.setText(QCoreApplication.translate("MainWindow", u"Disabled Tasks", None))
 #if QT_CONFIG(statustip)
-        self.label_7.setStatusTip(QCoreApplication.translate("MainWindow", u"Total Storage", None))
+        self.total_storage.setStatusTip(QCoreApplication.translate("MainWindow", u"Total Storage", None))
 #endif // QT_CONFIG(statustip)
-        self.label_7.setText(QCoreApplication.translate("MainWindow", u"0", None))
+        self.total_storage.setText(QCoreApplication.translate("MainWindow", u"0", None))
 #if QT_CONFIG(statustip)
         self.label_8.setStatusTip(QCoreApplication.translate("MainWindow", u"Total Storage", None))
 #endif // QT_CONFIG(statustip)
@@ -1244,6 +1254,12 @@ class Ui_MainWindow(object):
         self.label_21.setStatusTip(QCoreApplication.translate("MainWindow", u"Tasks Info", None))
 #endif // QT_CONFIG(statustip)
         self.label_21.setText(QCoreApplication.translate("MainWindow", u"Tasks", None))
+        ___qtablewidgetitem = self.list_tasks.horizontalHeaderItem(0)
+        ___qtablewidgetitem.setText(QCoreApplication.translate("MainWindow", u"Name", None));
+        ___qtablewidgetitem1 = self.list_tasks.horizontalHeaderItem(1)
+        ___qtablewidgetitem1.setText(QCoreApplication.translate("MainWindow", u"Path", None));
+        ___qtablewidgetitem2 = self.list_tasks.horizontalHeaderItem(2)
+        ___qtablewidgetitem2.setText(QCoreApplication.translate("MainWindow", u"Mode", None));
 #if QT_CONFIG(statustip)
         self.groupBox_3.setStatusTip(QCoreApplication.translate("MainWindow", u"Version Info", None))
 #endif // QT_CONFIG(statustip)

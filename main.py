@@ -10,7 +10,8 @@ from widgets.task_widget import Ui_Form
 from ui.main_window import Ui_MainWindow
 from PySide6.QtGui import QIcon, QAction
 from PySide6.QtCore import QDateTime, QSize, Qt, Slot
-from PySide6.QtWidgets import QApplication, QMainWindow, QListWidgetItem, QFileDialog, QWidget, QMenu
+from PySide6.QtWidgets import QApplication, QMainWindow, QListWidgetItem, QFileDialog, QWidget, QMenu, QHeaderView, \
+    QTableWidgetItem
 
 # folders
 work_folder = os.path.abspath(os.path.dirname(sys.argv[0]))
@@ -60,7 +61,7 @@ def get_db_version():
         if conn:
             conn.close()
 
-    log.info(f"Database version: {version}")
+    log.info(f"Current db version: {version}")
     return version
 
 
@@ -264,6 +265,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.button_add.clicked.connect(self.save_task)
         self.button_cancel.clicked.connect(self.cancel_task)
 
+        self.load_info()
+
     def new_version(self):
         self.last_update_version.setText(check_new_version())
 
@@ -272,6 +275,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def switch_homePage(self):
         log.debug("Home Page")
+        self.load_info()
         self.stackedWidget.setCurrentIndex(0)
 
     def switch_backupPage(self):
@@ -325,6 +329,33 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         log.debug("Task status changes to %s", self.state_task)
 
         self.load_apps()
+
+    def load_info(self):
+        log.debug("Loading information home page")
+        with open(f"{config_folder}/tasks.json", 'r') as file:
+            tasks = json.load(file)
+
+        total_tasks = len(tasks)
+        self.total_tasks.setText(str(total_tasks))
+
+        for i in range(self.list_tasks.rowCount()):
+            self.list_tasks.removeRow(0)
+
+        self.list_tasks.setHorizontalHeaderLabels(["Name", "Path", "Mode"])
+        self.list_tasks.horizontalHeader().setStretchLastSection(True)
+        self.list_tasks.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)
+
+        for task in tasks:
+            data = {task: tasks[task]}
+
+            name = data[task]["name"]
+            path = data[task]["folder"]
+            mode = data[task]["mode"]
+
+            self.list_tasks.insertRow(self.list_tasks.rowCount())
+            self.list_tasks.setItem(self.list_tasks.rowCount() - 1, 0, QTableWidgetItem(name))
+            self.list_tasks.setItem(self.list_tasks.rowCount() - 1, 1, QTableWidgetItem(path))
+            self.list_tasks.setItem(self.list_tasks.rowCount() - 1, 2, QTableWidgetItem(mode))
 
     def add_task(self, task):
         self.task = task
