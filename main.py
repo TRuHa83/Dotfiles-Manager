@@ -18,28 +18,28 @@ work_folder = os.path.abspath(os.path.dirname(sys.argv[0]))
 config_folder = os.path.join(work_folder, 'config')
 
 
-# Configuracion logs
-def configure_logging(level=log.INFO):
+# Configuration logs
+def configure_logging(value=log.INFO):
     log.basicConfig(
         format='%(asctime)s [%(levelname)s] %(message)s',
         datefmt='%d-%m-%Y %H:%M:%S',
-        level=level,
+        level=value,
         handlers=[
             log.StreamHandler()
         ]
     )
 
 
-def check_esencials_files():
+def check_essential_files():
     if not os.path.isdir(config_folder):
         log.error("Configuration folder not found")
         return False
 
-    if not os.path.isfile(f"{config_folder}/config.json"):
+    if not os.path.isfile(f'{config_folder}/config.json'):
         log.error("The config.json file cannot be found")
         return False
 
-    if not os.path.isfile(f"{config_folder}/tasks.json"):
+    if not os.path.isfile(f'{config_folder}/tasks.json'):
         log.error("The tasks.json file cannot be found")
         return False
 
@@ -47,6 +47,7 @@ def check_esencials_files():
 
 
 def get_db_version():
+    global conn
     try:
         conn = sqlite3.connect(f"{config_folder}/dotfiles.db")
         cursor = conn.cursor()
@@ -126,6 +127,27 @@ def check_db_new_version():
     except (FileNotFoundError, json.JSONDecodeError) as e:
         log.error(f"Error handling config.json file: {e}")
         return None
+
+
+def load_task_file():
+    try:
+        with open(f'{config_folder}/tasks.json', 'r') as file:
+            tasks = json.load(file)
+
+    except (FileNotFoundError, json.JSONDecodeError) as e:
+        log.error(f"Error handling tasks.json file: {e}")
+        tasks = {}
+
+    return tasks
+
+
+def save_task_file(task):
+    try:
+        with open(f'{config_folder}/tasks.json', 'w') as file:
+            json.dump(task, file, indent=2)
+
+    except (FileNotFoundError, json.JSONDecodeError) as e:
+        log.error(f"Error handling tasks.json file: {e}")
 
 
 class TaskWidget(QWidget, Ui_Form):
@@ -327,8 +349,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def load_info(self):
         log.debug("Loading information home page")
-        with open(f"{config_folder}/tasks.json", 'r') as file:
-            tasks = json.load(file)
+        tasks = load_task_file()
 
         total_tasks = len(tasks)
         self.total_tasks.setText(str(total_tasks))
@@ -366,13 +387,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.remove_widgets_task()
 
         log.debug("Loading tasks")
-        try:
-            with open(f"{config_folder}/tasks.json", 'r') as file:
-                tasks = json.load(file)
-
-        except (FileNotFoundError, json.JSONDecodeError) as e:
-            log.error(f"Error handling tasks.json file: {e}")
-            tasks = {}
+        tasks = load_task_file()
 
         if tasks:
             for task in tasks:
@@ -395,16 +410,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def remove_task(self, task):
         log.info("Deleting task: %s", task)
 
-        try:
-            with open(f'{config_folder}/tasks.json', 'r+') as file:
-                data = json.load(file)
-                data.pop(task)
-                file.seek(0)
-                json.dump(data, file, indent=2)
-                file.truncate()
-
-        except (FileNotFoundError, json.JSONDecodeError) as e:
-            log.error(f"Error handling tasks.json file: {e}")
+        data = load_task_file()
+        data.pop(task)
+        save_task_file(data)
 
         self.update_widgets_task()
 
@@ -560,16 +568,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             }
         }
 
-        try:
-            with open(f'{config_folder}/tasks.json', 'r+') as file:
-                data = json.load(file)
-                data.update(task)
-                file.seek(0)
-                json.dump(data, file, indent=2)
-                file.truncate()
-
-        except (FileNotFoundError, json.JSONDecodeError) as e:
-            log.error(f"Error handling tasks.json file: {e}")
+        data = load_task_file()
+        data.update(task)
+        save_task_file(data)
 
         log.info("Task saved")
 
@@ -584,7 +585,7 @@ if __name__ == '__main__':
 
     configure_logging(level)
 
-    if check_esencials_files():
+    if check_essential_files():
         app = QApplication(sys.argv)
 
         log.info("Initializing MainWindow")
