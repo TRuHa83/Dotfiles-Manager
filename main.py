@@ -207,11 +207,11 @@ class TaskWidget(QWidget, Ui_Form):
 class MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self):
         super().__init__()
-        log.info("Initializing MainWindow")
         log.debug("Setting initial variables")
         self.applications = None
         self.default_icon = None
         self.timestamp = None
+        self.task = None
         self.state_task = False
         self.state = 'home'
         self.level_value = 0
@@ -283,39 +283,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.stackedWidget.setCurrentIndex(0)
 
     def switch_backupPage(self):
-        if self.state != 'backup':
+        if self.state_task and self.state != 'task':
+            self.state = 'task'
+            self.stackedWidget.setCurrentIndex(5)
+
+        elif not self.state_task and self.state != 'backup':
             self.state = 'backup'
+            log.debug("Task page")
 
-            if self.state_task:
-                self.stackedWidget.setCurrentIndex(5)
-
-            else:
-                log.debug("Task page")
-                self.stackedWidget.setCurrentIndex(1)
-
-                if not self.task_scrollarea.layout().isEmpty():
-                    log.debug("Cleaning up tasks")
-                    for widget in self.widgets:
-                        self.task_scrollarea.layout().removeWidget(widget)
-                        widget.deleteLater()
-
-                    self.task_scrollarea.layout().removeItem(self.task_scrollarea.layout().itemAt(0))
-                    self.widgets.clear()
-
-                try:
-                    with open(f"{config_folder}/tasks.json", 'r') as file:
-                        tasks = json.load(file)
-
-                except (FileNotFoundError, json.JSONDecodeError) as e:
-                    log.error(f"Error handling tasks.json file: {e}")
-                    tasks = {}
-
-                log.debug("Loading tasks")
-                for task in tasks:
-                    data = {task: tasks[task]}
-                    self.add_task(data)
-
-                self.task_scrollarea.layout().addStretch()
+            self.stackedWidget.setCurrentIndex(1)
+            self.update_widgets_task()
 
     def switch_reportPage(self):
         if self.state != 'report':
@@ -342,6 +319,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         log.debug("Creating task")
         self.stackedWidget.setCurrentIndex(5)
         self.state_task = True
+        self.state = 'task'
+
         log.debug("Task status changes to %s", self.state_task)
 
         self.load_apps()
@@ -373,13 +352,45 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.list_tasks.setItem(self.list_tasks.rowCount() - 1, 1, QTableWidgetItem(path))
             self.list_tasks.setItem(self.list_tasks.rowCount() - 1, 2, QTableWidgetItem(mode))
 
+    def remove_widgets_task(self):
+        if not self.task_scrollarea.layout().isEmpty():
+            log.debug("Cleaning up tasks")
+            for widget in self.widgets:
+                self.task_scrollarea.layout().removeWidget(widget)
+                widget.deleteLater()
+
+            self.task_scrollarea.layout().removeItem(self.task_scrollarea.layout().itemAt(0))
+            self.widgets.clear()
+
+    def update_widgets_task(self):
+        self.remove_widgets_task()
+
+        log.debug("Loading tasks")
+        try:
+            with open(f"{config_folder}/tasks.json", 'r') as file:
+                tasks = json.load(file)
+
+        except (FileNotFoundError, json.JSONDecodeError) as e:
+            log.error(f"Error handling tasks.json file: {e}")
+            tasks = {}
+
+        if tasks:
+            for task in tasks:
+                data = {task: tasks[task]}
+                self.add_task(data)
+
+            self.task_scrollarea.layout().addStretch()
+
     def add_task(self, task):
         self.task = task
         log.debug("Adding task: %s", task)
 
         widget = TaskWidget(self, main_window=self)
+
         self.widgets.append(widget)
         self.task_scrollarea.layout().addWidget(widget)
+
+        self.task.clear()
 
     def remove_task(self, task):
         log.info("Deleting task: %s", task)
@@ -395,7 +406,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         except (FileNotFoundError, json.JSONDecodeError) as e:
             log.error(f"Error handling tasks.json file: {e}")
 
-        self.switch_backupPage()
+        self.update_widgets_task()
 
     def addAppsToList(self, apps):
         for app in apps:
@@ -576,6 +587,7 @@ if __name__ == '__main__':
     if check_esencials_files():
         app = QApplication(sys.argv)
 
+        log.info("Initializing MainWindow")
         window = MainWindow()
         window.show()
 
