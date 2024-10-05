@@ -10,24 +10,12 @@ from widgets.task_widget import Ui_Form
 from ui.main_window import Ui_MainWindow
 from PySide6.QtGui import QIcon, QAction
 from PySide6.QtCore import QDateTime, QSize, Qt, Slot
-from PySide6.QtWidgets import QApplication, QMainWindow, QListWidgetItem, QFileDialog, QWidget, QMenu, QHeaderView, \
-    QTableWidgetItem
+from PySide6.QtWidgets import QApplication, QMainWindow, QListWidgetItem, QFileDialog
+from PySide6.QtWidgets import QWidget, QMenu, QHeaderView, QTableWidgetItem
 
 # folders
 work_folder = os.path.abspath(os.path.dirname(sys.argv[0]))
 config_folder = os.path.join(work_folder, 'config')
-
-
-# Configuration logs
-def configure_logging(value=log.INFO):
-    log.basicConfig(
-        format='%(asctime)s [%(levelname)s] %(message)s',
-        datefmt='%d-%m-%Y %H:%M:%S',
-        level=value,
-        handlers=[
-            log.StreamHandler()
-        ]
-    )
 
 
 def check_essential_files():
@@ -150,6 +138,16 @@ def save_task_file(task):
         log.error(f"Error handling tasks.json file: {e}")
 
 
+class ReportInject(log.Handler):
+    def __init__(self, widget):
+        super().__init__()
+        self.widget = widget
+
+    def emit(self, record):
+        msg = self.format(record)
+        self.widget.appendPlainText(msg)
+
+
 class TaskWidget(QWidget, Ui_Form):
     def __init__(self, parent=None, main_window=None, *args, **kwargs):
         super().__init__(parent, *args, **kwargs)
@@ -227,7 +225,7 @@ class TaskWidget(QWidget, Ui_Form):
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):
-    def __init__(self):
+    def __init__(self, level_log=log.INFO):
         super().__init__()
         log.debug("Setting initial variables")
         self.applications = None
@@ -236,16 +234,20 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.task = None
         self.state_task = False
         self.state = 'home'
+        self.level_log = level_log
         self.level_value = 0
         self.applications = {}
         self.user_files = []
         self.dotfiles = []
         self.widgets = []
 
-        log.debug("Configuring interface")
         self.setupUi(self)
+
+        log.debug("Configuring interface")
         self.setWindowTitle("Dotfile Manager")
         self.setFixedSize(800, 500)
+
+        self.configure_logging()
 
         self.menu_full.setHidden(True)
 
@@ -288,6 +290,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.button_cancel.clicked.connect(self.cancel_task)
 
         self.load_info()
+
+    def configure_logging(self):
+        self.looger = log.getLogger()
+        self.looger.setLevel(self.level_log)
+
+        handler = ReportInject(self.report)
+        handler.setFormatter(log.Formatter('%(asctime)s - %(levelname)s - %(message)s',
+                                            datefmt='%d-%m-%Y %H:%M:%S'))
+
+        self.looger.addHandler(handler)
 
     def new_version(self):
         self.last_update_version.setText(check_new_version())
@@ -572,7 +584,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         data.update(task)
         save_task_file(data)
 
-        log.info("Task saved")
+        log.info("Task saved: %s", task[self.timestamp]["name"])
 
         self.clear_fields()
         self.switch_backupPage()
@@ -583,13 +595,10 @@ if __name__ == '__main__':
     if "--debug" in sys.argv:
         level = log.DEBUG
 
-    configure_logging(level)
-
     if check_essential_files():
         app = QApplication(sys.argv)
 
-        log.info("Initializing MainWindow")
-        window = MainWindow()
+        window = MainWindow(level_log=level)
         window.show()
 
         app.exec()

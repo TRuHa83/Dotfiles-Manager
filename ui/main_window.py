@@ -18,10 +18,10 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
 from PySide6.QtWidgets import (QAbstractItemView, QAbstractScrollArea, QApplication, QFrame,
     QGridLayout, QGroupBox, QHBoxLayout, QHeaderView,
     QLabel, QLineEdit, QListView, QListWidget,
-    QListWidgetItem, QMainWindow, QPushButton, QRadioButton,
-    QScrollArea, QSizePolicy, QSpacerItem, QSpinBox,
-    QStackedWidget, QStatusBar, QTabWidget, QTableWidget,
-    QTableWidgetItem, QVBoxLayout, QWidget)
+    QListWidgetItem, QMainWindow, QPlainTextEdit, QPushButton,
+    QRadioButton, QScrollArea, QSizePolicy, QSpacerItem,
+    QSpinBox, QStackedWidget, QStatusBar, QTabWidget,
+    QTableWidget, QTableWidgetItem, QVBoxLayout, QWidget)
 import ui.recursos_rc
 
 class Ui_MainWindow(object):
@@ -763,10 +763,13 @@ class Ui_MainWindow(object):
         self.page_report.setObjectName(u"page_report")
         self.gridLayout_4 = QGridLayout(self.page_report)
         self.gridLayout_4.setObjectName(u"gridLayout_4")
-        self.report = QLabel(self.page_report)
+        self.report = QPlainTextEdit(self.page_report)
         self.report.setObjectName(u"report")
-        self.report.setTextFormat(Qt.AutoText)
-        self.report.setAlignment(Qt.AlignCenter)
+        font5 = QFont()
+        font5.setPointSize(8)
+        self.report.setFont(font5)
+        self.report.setFrameShape(QFrame.StyledPanel)
+        self.report.setReadOnly(True)
 
         self.gridLayout_4.addWidget(self.report, 0, 0, 1, 1)
 
@@ -892,9 +895,9 @@ class Ui_MainWindow(object):
         self.horizontalLayout_6.setObjectName(u"horizontalLayout_6")
         self.title = QLabel(self.buttons_backups_3)
         self.title.setObjectName(u"title")
-        font5 = QFont()
-        font5.setPointSize(14)
-        self.title.setFont(font5)
+        font6 = QFont()
+        font6.setPointSize(14)
+        self.title.setFont(font6)
 
         self.horizontalLayout_6.addWidget(self.title)
 
@@ -1070,15 +1073,13 @@ class Ui_MainWindow(object):
 
         self.label_17 = QLabel(self.groupBox_6)
         self.label_17.setObjectName(u"label_17")
-        font6 = QFont()
-        font6.setPointSize(8)
-        self.label_17.setFont(font6)
+        self.label_17.setFont(font5)
 
         self.horizontalLayout_10.addWidget(self.label_17)
 
         self.level_spin = QSpinBox(self.groupBox_6)
         self.level_spin.setObjectName(u"level_spin")
-        self.level_spin.setFont(font6)
+        self.level_spin.setFont(font5)
         self.level_spin.setMaximum(5)
 
         self.horizontalLayout_10.addWidget(self.level_spin)
@@ -1313,7 +1314,6 @@ class Ui_MainWindow(object):
 #if QT_CONFIG(statustip)
         self.task_area.setStatusTip(QCoreApplication.translate("MainWindow", u"Tasks List", None))
 #endif // QT_CONFIG(statustip)
-        self.report.setText(QCoreApplication.translate("MainWindow", u"Report", None))
 #if QT_CONFIG(statustip)
         self.page_settings.setStatusTip(QCoreApplication.translate("MainWindow", u"Settings", None))
 #endif // QT_CONFIG(statustip)
