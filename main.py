@@ -10,7 +10,7 @@ from widgets.task_widget import Ui_Form
 from ui.main_window import Ui_MainWindow
 from PySide6.QtGui import QIcon, QAction
 from PySide6.QtCore import QDateTime, QSize, Qt, Slot
-from PySide6.QtWidgets import QApplication, QMainWindow, QListWidgetItem, QFileDialog
+from PySide6.QtWidgets import QApplication, QMainWindow, QListWidgetItem, QFileDialog, QMessageBox
 from PySide6.QtWidgets import QWidget, QMenu, QHeaderView, QTableWidgetItem
 
 # folders
@@ -227,7 +227,6 @@ class TaskWidget(QWidget, Ui_Form):
 class MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self, level_log=log.INFO):
         super().__init__()
-        log.debug("Setting initial variables")
         self.applications = None
         self.default_icon = None
         self.timestamp = None
@@ -243,12 +242,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.setupUi(self)
 
-        log.debug("Configuring interface")
         self.setWindowTitle("Dotfile Manager")
         self.setFixedSize(800, 500)
 
         self.configure_logging()
-
         self.menu_full.setHidden(True)
 
         log.info("Current version: %s", __version__)
@@ -420,13 +417,23 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.task.clear()
 
     def remove_task(self, task):
-        log.info("Deleting task: %s", task)
+        log.warning(f'Delete task: {task}?')
 
-        data = load_task_file()
-        data.pop(task)
-        save_task_file(data)
+        reply = QMessageBox.question(self, 'Confirm Deletion',
+                                     f"Are you sure you want to delete the task?",
+                                     QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
 
-        self.update_widgets_task()
+        if reply == QMessageBox.Yes:
+            log.info("Task deleted")
+
+            data = load_task_file()
+            data.pop(task)
+            save_task_file(data)
+
+            self.update_widgets_task()
+
+        else:
+            log.info("Task deletion cancelled")
 
     def addAppsToList(self, apps):
         for app in apps:
