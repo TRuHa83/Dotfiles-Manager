@@ -119,12 +119,19 @@ def save_task_file(task):
 def check_new_version():
     time_now = QDateTime.currentDateTime().toString("yyyy-MM-dd hh:mm")
 
-    # Comprueba en Github si hay una nueva versión
+    url = f"https://api.github.com/repos/TRuHa83/Dotfiles-Manager/releases"
+    response = requests.get(url)
+
+    tag = None
+    if response.status_code == 200:
+        releases = response.json()
+        for release in releases:
+            tag = release["tag_name"]
 
     save_data_config("last_update", time_now)
     log.debug(f"Last update: {time_now}")
 
-    return time_now
+    return tag, time_now
 
 
 def check_db_new_version():
@@ -300,7 +307,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.looger.addHandler(handler)
 
     def new_version(self):
-        self.last_update_version.setText(check_new_version())
+        version, date = check_new_version()
+        self.last_version.setText(version)
+        self.last_update_version.setText(version)
 
     def new_db_version(self):
         version, date = check_db_new_version()
