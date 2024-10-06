@@ -363,24 +363,49 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         total_tasks = len(tasks)
         self.total_tasks.setText(str(total_tasks))
 
-        for i in range(self.list_tasks.rowCount()):
-            self.list_tasks.removeRow(0)
-
-        self.list_tasks.setHorizontalHeaderLabels(["Name", "Path", "Mode"])
-        self.list_tasks.horizontalHeader().setStretchLastSection(True)
-        self.list_tasks.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)
-
+        backup_tasks = 0
+        git_tasks = 0
         for task in tasks:
+            if tasks[task]["mode"] == "backup":
+                backup_tasks += 1
+            else:
+                git_tasks += 1
+
+        self.count_backup_tasks.setText(str(backup_tasks))
+        self.count_git_tasks.setText(str(git_tasks))
+
+        for i in range(self.git_tasks.rowCount()):
+            self.git_tasks.removeRow(0)
+
+        self.git_tasks.setHorizontalHeaderLabels(["Name", "Path", "Mode"])
+        self.git_tasks.horizontalHeader().setStretchLastSection(True)
+        self.git_tasks.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)
+
+        self.backup_tasks.setHorizontalHeaderLabels(["Name", "Path", "Mode"])
+        self.backup_tasks.horizontalHeader().setStretchLastSection(True)
+        self.backup_tasks.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)
+
+        git = self.git_tasks
+        backup = self.backup_tasks
+
+        def load_tasks(task, widget):
             data = {task: tasks[task]}
 
             name = data[task]["name"]
             path = data[task]["folder"]
             mode = data[task]["mode"]
 
-            self.list_tasks.insertRow(self.list_tasks.rowCount())
-            self.list_tasks.setItem(self.list_tasks.rowCount() - 1, 0, QTableWidgetItem(name))
-            self.list_tasks.setItem(self.list_tasks.rowCount() - 1, 1, QTableWidgetItem(path))
-            self.list_tasks.setItem(self.list_tasks.rowCount() - 1, 2, QTableWidgetItem(mode))
+            widget.insertRow(widget.rowCount())
+            widget.setItem(widget.rowCount() - 1, 0, QTableWidgetItem(name))
+            widget.setItem(widget.rowCount() - 1, 1, QTableWidgetItem(path))
+            widget.setItem(widget.rowCount() - 1, 2, QTableWidgetItem(mode))
+
+        for task in tasks:
+            widget = backup
+            if tasks[task]["mode"] == "git":
+                widget = git
+
+            load_tasks(task, widget)
 
     def remove_widgets_task(self):
         if not self.task_scrollarea.layout().isEmpty():

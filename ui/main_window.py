@@ -17,11 +17,11 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QAbstractItemView, QAbstractScrollArea, QApplication, QFrame,
     QGridLayout, QGroupBox, QHBoxLayout, QHeaderView,
-    QLabel, QLineEdit, QListView, QListWidget,
-    QListWidgetItem, QMainWindow, QPlainTextEdit, QPushButton,
-    QRadioButton, QScrollArea, QSizePolicy, QSpacerItem,
-    QSpinBox, QStackedWidget, QStatusBar, QTabWidget,
-    QTableWidget, QTableWidgetItem, QVBoxLayout, QWidget)
+    QLabel, QLineEdit, QListWidget, QListWidgetItem,
+    QMainWindow, QPlainTextEdit, QPushButton, QRadioButton,
+    QScrollArea, QSizePolicy, QSpacerItem, QSpinBox,
+    QStackedWidget, QStatusBar, QTabWidget, QTableWidget,
+    QTableWidgetItem, QVBoxLayout, QWidget)
 import ui.recursos_rc
 
 class Ui_MainWindow(object):
@@ -359,15 +359,15 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_6 = QVBoxLayout()
         self.verticalLayout_6.setObjectName(u"verticalLayout_6")
-        self.enabled_tasks = QLabel(self.groupBox)
-        self.enabled_tasks.setObjectName(u"enabled_tasks")
-        self.enabled_tasks.setFont(font1)
-        self.enabled_tasks.setStyleSheet(u"QLabel {\n"
+        self.count_git_tasks = QLabel(self.groupBox)
+        self.count_git_tasks.setObjectName(u"count_git_tasks")
+        self.count_git_tasks.setFont(font1)
+        self.count_git_tasks.setStyleSheet(u"QLabel {\n"
 "	color: #5985E1;\n"
 "}")
-        self.enabled_tasks.setAlignment(Qt.AlignCenter)
+        self.count_git_tasks.setAlignment(Qt.AlignCenter)
 
-        self.verticalLayout_6.addWidget(self.enabled_tasks)
+        self.verticalLayout_6.addWidget(self.count_git_tasks)
 
         self.label_4 = QLabel(self.groupBox)
         self.label_4.setObjectName(u"label_4")
@@ -388,15 +388,15 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_7 = QVBoxLayout()
         self.verticalLayout_7.setObjectName(u"verticalLayout_7")
-        self.disabled_tasks = QLabel(self.groupBox)
-        self.disabled_tasks.setObjectName(u"disabled_tasks")
-        self.disabled_tasks.setFont(font1)
-        self.disabled_tasks.setStyleSheet(u"QLabel {\n"
+        self.count_backup_tasks = QLabel(self.groupBox)
+        self.count_backup_tasks.setObjectName(u"count_backup_tasks")
+        self.count_backup_tasks.setFont(font1)
+        self.count_backup_tasks.setStyleSheet(u"QLabel {\n"
 "	color: #5985E1;\n"
 "}")
-        self.disabled_tasks.setAlignment(Qt.AlignCenter)
+        self.count_backup_tasks.setAlignment(Qt.AlignCenter)
 
-        self.verticalLayout_7.addWidget(self.disabled_tasks)
+        self.verticalLayout_7.addWidget(self.count_backup_tasks)
 
         self.label_6 = QLabel(self.groupBox)
         self.label_6.setObjectName(u"label_6")
@@ -457,19 +457,19 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_18.addWidget(self.label_21)
 
-        self.list_tasks = QTableWidget(self.groupBox_2)
-        if (self.list_tasks.columnCount() < 3):
-            self.list_tasks.setColumnCount(3)
+        self.git_tasks = QTableWidget(self.groupBox_2)
+        if (self.git_tasks.columnCount() < 3):
+            self.git_tasks.setColumnCount(3)
         __qtablewidgetitem = QTableWidgetItem()
-        self.list_tasks.setHorizontalHeaderItem(0, __qtablewidgetitem)
+        self.git_tasks.setHorizontalHeaderItem(0, __qtablewidgetitem)
         __qtablewidgetitem1 = QTableWidgetItem()
-        self.list_tasks.setHorizontalHeaderItem(1, __qtablewidgetitem1)
+        self.git_tasks.setHorizontalHeaderItem(1, __qtablewidgetitem1)
         __qtablewidgetitem2 = QTableWidgetItem()
-        self.list_tasks.setHorizontalHeaderItem(2, __qtablewidgetitem2)
-        self.list_tasks.setObjectName(u"list_tasks")
-        self.list_tasks.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.git_tasks.setHorizontalHeaderItem(2, __qtablewidgetitem2)
+        self.git_tasks.setObjectName(u"git_tasks")
+        self.git_tasks.setEditTriggers(QAbstractItemView.NoEditTriggers)
 
-        self.verticalLayout_18.addWidget(self.list_tasks)
+        self.verticalLayout_18.addWidget(self.git_tasks)
 
 
         self.gridLayout_7.addWidget(self.groupBox_2, 0, 0, 1, 1)
@@ -583,10 +583,19 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_17.addWidget(self.label_22)
 
-        self.list_backups = QListView(self.groupBox_4)
-        self.list_backups.setObjectName(u"list_backups")
+        self.backup_tasks = QTableWidget(self.groupBox_4)
+        if (self.backup_tasks.columnCount() < 3):
+            self.backup_tasks.setColumnCount(3)
+        __qtablewidgetitem3 = QTableWidgetItem()
+        self.backup_tasks.setHorizontalHeaderItem(0, __qtablewidgetitem3)
+        __qtablewidgetitem4 = QTableWidgetItem()
+        self.backup_tasks.setHorizontalHeaderItem(1, __qtablewidgetitem4)
+        __qtablewidgetitem5 = QTableWidgetItem()
+        self.backup_tasks.setHorizontalHeaderItem(2, __qtablewidgetitem5)
+        self.backup_tasks.setObjectName(u"backup_tasks")
+        self.backup_tasks.setEditTriggers(QAbstractItemView.NoEditTriggers)
 
-        self.verticalLayout_17.addWidget(self.list_backups)
+        self.verticalLayout_17.addWidget(self.backup_tasks)
 
 
         self.gridLayout_7.addWidget(self.groupBox_4, 1, 0, 1, 1)
@@ -749,7 +758,7 @@ class Ui_MainWindow(object):
         self.task_area.setWidgetResizable(True)
         self.task_scrollarea = QWidget()
         self.task_scrollarea.setObjectName(u"task_scrollarea")
-        self.task_scrollarea.setGeometry(QRect(0, 0, 100, 30))
+        self.task_scrollarea.setGeometry(QRect(0, 0, 67, 16))
         self.verticalLayout_19 = QVBoxLayout(self.task_scrollarea)
         self.verticalLayout_19.setSpacing(6)
         self.verticalLayout_19.setObjectName(u"verticalLayout_19")
@@ -1224,21 +1233,21 @@ class Ui_MainWindow(object):
 #endif // QT_CONFIG(statustip)
         self.label_2.setText(QCoreApplication.translate("MainWindow", u"Total Tasks", None))
 #if QT_CONFIG(statustip)
-        self.enabled_tasks.setStatusTip(QCoreApplication.translate("MainWindow", u"Enabled Tasks", None))
+        self.count_git_tasks.setStatusTip(QCoreApplication.translate("MainWindow", u"Enabled Tasks", None))
 #endif // QT_CONFIG(statustip)
-        self.enabled_tasks.setText(QCoreApplication.translate("MainWindow", u"0", None))
+        self.count_git_tasks.setText(QCoreApplication.translate("MainWindow", u"0", None))
 #if QT_CONFIG(statustip)
         self.label_4.setStatusTip(QCoreApplication.translate("MainWindow", u"Enabled Tasks", None))
 #endif // QT_CONFIG(statustip)
-        self.label_4.setText(QCoreApplication.translate("MainWindow", u"Enabled Tasks", None))
+        self.label_4.setText(QCoreApplication.translate("MainWindow", u"Git Tasks", None))
 #if QT_CONFIG(statustip)
-        self.disabled_tasks.setStatusTip(QCoreApplication.translate("MainWindow", u"Disabled Tasks", None))
+        self.count_backup_tasks.setStatusTip(QCoreApplication.translate("MainWindow", u"Disabled Tasks", None))
 #endif // QT_CONFIG(statustip)
-        self.disabled_tasks.setText(QCoreApplication.translate("MainWindow", u"0", None))
+        self.count_backup_tasks.setText(QCoreApplication.translate("MainWindow", u"0", None))
 #if QT_CONFIG(statustip)
         self.label_6.setStatusTip(QCoreApplication.translate("MainWindow", u"Disabled Tasks", None))
 #endif // QT_CONFIG(statustip)
-        self.label_6.setText(QCoreApplication.translate("MainWindow", u"Disabled Tasks", None))
+        self.label_6.setText(QCoreApplication.translate("MainWindow", u"Backups Tasks", None))
 #if QT_CONFIG(statustip)
         self.total_storage.setStatusTip(QCoreApplication.translate("MainWindow", u"Total Storage", None))
 #endif // QT_CONFIG(statustip)
@@ -1254,12 +1263,12 @@ class Ui_MainWindow(object):
 #if QT_CONFIG(statustip)
         self.label_21.setStatusTip(QCoreApplication.translate("MainWindow", u"Tasks Info", None))
 #endif // QT_CONFIG(statustip)
-        self.label_21.setText(QCoreApplication.translate("MainWindow", u"Tasks", None))
-        ___qtablewidgetitem = self.list_tasks.horizontalHeaderItem(0)
+        self.label_21.setText(QCoreApplication.translate("MainWindow", u"Git", None))
+        ___qtablewidgetitem = self.git_tasks.horizontalHeaderItem(0)
         ___qtablewidgetitem.setText(QCoreApplication.translate("MainWindow", u"Name", None));
-        ___qtablewidgetitem1 = self.list_tasks.horizontalHeaderItem(1)
+        ___qtablewidgetitem1 = self.git_tasks.horizontalHeaderItem(1)
         ___qtablewidgetitem1.setText(QCoreApplication.translate("MainWindow", u"Path", None));
-        ___qtablewidgetitem2 = self.list_tasks.horizontalHeaderItem(2)
+        ___qtablewidgetitem2 = self.git_tasks.horizontalHeaderItem(2)
         ___qtablewidgetitem2.setText(QCoreApplication.translate("MainWindow", u"Mode", None));
 #if QT_CONFIG(statustip)
         self.groupBox_3.setStatusTip(QCoreApplication.translate("MainWindow", u"Version Info", None))
@@ -1284,6 +1293,12 @@ class Ui_MainWindow(object):
         self.label_22.setStatusTip(QCoreApplication.translate("MainWindow", u"Backups Info", None))
 #endif // QT_CONFIG(statustip)
         self.label_22.setText(QCoreApplication.translate("MainWindow", u"Backups", None))
+        ___qtablewidgetitem3 = self.backup_tasks.horizontalHeaderItem(0)
+        ___qtablewidgetitem3.setText(QCoreApplication.translate("MainWindow", u"Name", None));
+        ___qtablewidgetitem4 = self.backup_tasks.horizontalHeaderItem(1)
+        ___qtablewidgetitem4.setText(QCoreApplication.translate("MainWindow", u"Path", None));
+        ___qtablewidgetitem5 = self.backup_tasks.horizontalHeaderItem(2)
+        ___qtablewidgetitem5.setText(QCoreApplication.translate("MainWindow", u"Mode", None));
 #if QT_CONFIG(statustip)
         self.groupBox_5.setStatusTip(QCoreApplication.translate("MainWindow", u"Data Base Info", None))
 #endif // QT_CONFIG(statustip)
