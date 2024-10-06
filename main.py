@@ -4,14 +4,17 @@ import json
 import sqlite3
 import logging as log
 
+import requests
+
 from engine import search
 from version import __version__
 from widgets.task_widget import Ui_Form
 from ui.main_window import Ui_MainWindow
+
 from PySide6.QtGui import QIcon, QAction
 from PySide6.QtCore import QDateTime, QSize, Qt, Slot
-from PySide6.QtWidgets import QApplication, QMainWindow, QListWidgetItem, QFileDialog, QMessageBox
-from PySide6.QtWidgets import QWidget, QMenu, QHeaderView, QTableWidgetItem
+from PySide6.QtWidgets import QApplication, QMainWindow, QListWidgetItem, QFileDialog
+from PySide6.QtWidgets import QWidget, QMenu, QHeaderView, QTableWidgetItem, QMessageBox
 
 # folders
 work_folder = os.path.abspath(os.path.dirname(sys.argv[0]))
@@ -25,11 +28,24 @@ def check_essential_files():
 
     if not os.path.isfile(f'{config_folder}/config.json'):
         log.error("The config.json file cannot be found")
-        return False
+
+        with open(f'{config_folder}/config.json', 'w') as f:
+            data = {
+                "last_update": None,
+                "last_update_db": None
+            }
+            f.write(json.dumps(data, indent=2))
+
+        log.info("The config.json file has been created")
 
     if not os.path.isfile(f'{config_folder}/tasks.json'):
         log.error("The tasks.json file cannot be found")
-        return False
+
+        with open(f'{config_folder}/tasks.json', 'w') as f:
+            data = {}
+            f.write(json.dumps(data, indent=2))
+
+        log.info("The tasks.json file has been created")
 
     return True
 
@@ -54,67 +70,29 @@ def get_db_version():
     return version
 
 
-def get_last_update():
+def get_data_config(value):
     try:
         with open(f'{config_folder}/config.json', 'r') as f:
             data = json.load(f)
-        return data["last_update"]
+
+        return data[value]
 
     except (FileNotFoundError, json.JSONDecodeError) as e:
         log.error(f"Error handling config.json file: {e}")
         return None
 
 
-def get_last_update_db():
+def save_data_config(value, data):
     try:
         with open(f'{config_folder}/config.json', 'r') as f:
-            data = json.load(f)
-        return data["last_update_db"]
+            config = json.load(f)
 
-    except (FileNotFoundError, json.JSONDecodeError) as e:
-        log.error(f"Error handling config.json file: {e}")
-        return None
-
-
-def check_new_version():
-    time_now = QDateTime.currentDateTime().toString("yyyy-MM-dd hh:mm")
-    try:
-        with open(f'{config_folder}/config.json', 'r') as f:
-            data = json.load(f)
-
-        # Comprueba en Github si hay una nueva versión
-
-        data["last_update"] = time_now
+        config[value] = data
         with open(f'{config_folder}/config.json', 'w') as f:
-            f.write(json.dumps(data, indent=2))
-
-        log.debug(f"Last update: {time_now}")
-        return time_now
+            f.write(json.dumps(config, indent=2))
 
     except (FileNotFoundError, json.JSONDecodeError) as e:
         log.error(f"Error handling config.json file: {e}")
-        return None
-
-
-def check_db_new_version():
-    time_now = QDateTime.currentDateTime().toString("yyyy-MM-dd hh:mm")
-
-    try:
-        with open(f'{config_folder}/config.json', 'r') as f:
-            data = json.load(f)
-
-        # Comprueba en Github si hay una nueva versión
-
-        data["last_update_db"] = time_now
-        with open(f'{config_folder}/config.json', 'w') as f:
-            f.write(json.dumps(data, indent=2))
-
-        log.debug(f"Last database update: {time_now}")
-        return time_now
-
-    except (FileNotFoundError, json.JSONDecodeError) as e:
-        log.error(f"Error handling config.json file: {e}")
-        return None
 
 
 def load_task_file():
@@ -136,6 +114,35 @@ def save_task_file(task):
 
     except (FileNotFoundError, json.JSONDecodeError) as e:
         log.error(f"Error handling tasks.json file: {e}")
+
+
+def check_new_version():
+    time_now = QDateTime.currentDateTime().toString("yyyy-MM-dd hh:mm")
+
+    # Comprueba en Github si hay una nueva versión
+
+    save_data_config("last_update", time_now)
+    log.debug(f"Last update: {time_now}")
+
+    return time_now
+
+
+def check_db_new_version():
+    time_now = QDateTime.currentDateTime().toString("yyyy-MM-dd hh:mm")
+
+    url = f"https://api.github.com/repos/TRuHa83/Dotfiles-Manager/releases"
+    response = requests.get(url)
+
+    tag = None
+    if response.status_code == 200:
+        releases = response.json()
+        for release in releases:
+            tag = release["tag_name"]
+
+    save_data_config("last_update_db", time_now)
+    log.debug(f"Last database update: {time_now}")
+
+    return tag, time_now
 
 
 class ReportInject(log.Handler):
@@ -248,12 +255,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.configure_logging()
         self.menu_full.setHidden(True)
 
-        log.info("Current version: %s", __version__)
-        self.version.setText(__version__)
-        self.last_update_version.setText(get_last_update())
-        self.db_version.setText(get_db_version())
-        self.last_update_version_db.setText(get_last_update_db())
-
         log.debug("Connecting signals")
         self.check_version.clicked.connect(self.new_version)
         self.check_db_version.clicked.connect(self.new_db_version)
@@ -302,7 +303,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.last_update_version.setText(check_new_version())
 
     def new_db_version(self):
-        self.last_update_version_db.setText(check_db_new_version())
+        version, date = check_db_new_version()
+        self.db_last_version.setText(version)
+        self.last_update_version_db.setText(date)
 
     def switch_homePage(self):
         if self.state != 'home':
@@ -374,21 +377,19 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.count_backup_tasks.setText(str(backup_tasks))
         self.count_git_tasks.setText(str(git_tasks))
 
-        for i in range(self.git_tasks.rowCount()):
-            self.git_tasks.removeRow(0)
-
-        self.git_tasks.setHorizontalHeaderLabels(["Name", "Path", "Mode"])
-        self.git_tasks.horizontalHeader().setStretchLastSection(True)
-        self.git_tasks.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)
-
-        self.backup_tasks.setHorizontalHeaderLabels(["Name", "Path", "Mode"])
-        self.backup_tasks.horizontalHeader().setStretchLastSection(True)
-        self.backup_tasks.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)
-
         git = self.git_tasks
         backup = self.backup_tasks
+        widgets = [git, backup]
 
-        def load_tasks(task, widget):
+        for widget in widgets:
+            for i in range(widget.rowCount()):
+                widget.removeRow(0)
+
+            widget.setHorizontalHeaderLabels(["Name", "Path", "Mode"])
+            widget.horizontalHeader().setStretchLastSection(True)
+            widget.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)
+
+        def show_tasks(task, widget):
             data = {task: tasks[task]}
 
             name = data[task]["name"]
@@ -405,7 +406,17 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             if tasks[task]["mode"] == "git":
                 widget = git
 
-            load_tasks(task, widget)
+            show_tasks(task, widget)
+
+        log.info("Current version: %s", __version__)
+        self.version.setText(__version__)
+        self.db_version.setText(get_db_version())
+
+        last_get_update = get_data_config("last_update")
+        last_get_db_update = get_data_config("last_update_db")
+
+        self.last_update_version.setText(last_get_update)
+        self.last_update_version_db.setText(last_get_db_update)
 
     def remove_widgets_task(self):
         if not self.task_scrollarea.layout().isEmpty():
