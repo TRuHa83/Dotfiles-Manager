@@ -6,7 +6,7 @@ import logging as log
 
 import requests
 
-from engine import search
+from Engine import Search
 from version import __version__
 from widgets.task_widget import Ui_Form
 from ui.main_window import Ui_MainWindow
@@ -159,6 +159,7 @@ class ReportInject(log.Handler):
 
     def emit(self, record):
         msg = self.format(record)
+        print(msg)
         self.widget.appendPlainText(msg)
 
 
@@ -170,7 +171,6 @@ class TaskWidget(QWidget, Ui_Form):
         self.main_window = main_window
         task = self.main_window.task
 
-        # obtiene el primer key del dict data
         self.time = list(task.keys())[0]
         self.data = task[self.time]
 
@@ -203,7 +203,7 @@ class TaskWidget(QWidget, Ui_Form):
         self.button_retore.clicked.connect(self.restore)
 
     def start_backup(self):
-        print("Backup")
+        log.info("Start backup: %s", self.time)
 
     def restore(self):
         print("Restore")
@@ -262,6 +262,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.configure_logging()
         self.menu_full.setHidden(True)
 
+        log.info("Current version: %s", __version__)
+        self.version.setText(__version__)
+        self.db_version.setText(get_db_version())
+
+        last_get_update = get_data_config("last_update")
+        last_get_db_update = get_data_config("last_update_db")
+
+        self.last_update_version.setText(last_get_update)
+        self.last_update_version_db.setText(last_get_db_update)
+
         log.debug("Connecting signals")
         self.check_version.clicked.connect(self.new_version)
         self.check_db_version.clicked.connect(self.new_db_version)
@@ -307,11 +317,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.looger.addHandler(handler)
 
     def new_version(self):
+        log.info("Checking update version")
         version, date = check_new_version()
         self.last_version.setText(version)
-        self.last_update_version.setText(version)
+        self.last_update_version.setText(date)
 
     def new_db_version(self):
+        log.info("Checking update database version")
         version, date = check_db_new_version()
         self.db_last_version.setText(version)
         self.last_update_version_db.setText(date)
@@ -417,16 +429,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
             show_tasks(task, widget)
 
-        log.info("Current version: %s", __version__)
-        self.version.setText(__version__)
-        self.db_version.setText(get_db_version())
-
-        last_get_update = get_data_config("last_update")
-        last_get_db_update = get_data_config("last_update_db")
-
-        self.last_update_version.setText(last_get_update)
-        self.last_update_version_db.setText(last_get_db_update)
-
     def remove_widgets_task(self):
         if not self.task_scrollarea.layout().isEmpty():
             log.debug("Cleaning up tasks")
@@ -491,7 +493,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def change_level(self, value):
         log.debug("Changing priority level to %s", value)
-        app_newlevel = search.list_apps(self.user_files, self.level_spin.value())
+        app_newlevel = Search.list_apps(self.user_files, self.level_spin.value())
 
         log.debug("Upgrading applications to a new level")
         items = {}
@@ -520,8 +522,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         log.debug("Loading applications")
         self.apps_list.clear()
 
-        self.user_files, self.user_folders, self.config_files, self.config_folders = search.dotfiles()
-        self.applications = search.list_apps(self.user_files, self.level_spin.value())
+        self.user_files, self.user_folders, self.config_files, self.config_folders = Search.dotfiles()
+        self.applications = Search.list_apps(self.user_files, self.level_spin.value())
 
         log.debug("Loaded applications: %s", self.applications.keys())
         self.addAppsToList(self.applications.keys())
@@ -546,7 +548,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         icon = QIcon()
 
         log.debug("Looking for icon for %s", application)
-        img = search.icons(application.lower())
+        img = Search.icons(application.lower())
         if img is None:
             log.debug("Icon not found, default icon set")
             img = work_folder + "/assets/icon24x24.png"

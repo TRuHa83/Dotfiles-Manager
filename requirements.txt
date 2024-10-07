@@ -1,2 +1,3 @@
-PySide6
 pillow
+PySide6
+requests
