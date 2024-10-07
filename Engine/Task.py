@@ -9,7 +9,6 @@ def calcular_checksum(archivo, algoritmo="sha256"):
     # Crear un objeto hash usando el algoritmo especificado
     hash_func = hashlib.new(algoritmo)
 
-    # Leer el archivo en bloques para no cargar todo en memoria
     with open(archivo, "rb") as f:
         for bloque in iter(lambda: f.read(4096), b""):
             hash_func.update(bloque)
