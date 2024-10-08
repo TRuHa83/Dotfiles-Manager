@@ -32,8 +32,10 @@ def check_essential_files():
         with open(f'{config_folder}/config.json', 'w') as f:
             data = {
                 "last_update": None,
-                "last_update_db": None
+                "last_update_db": None,
+                "default_path": None
             }
+
             f.write(json.dumps(data, indent=2))
 
         log.info("The config.json file has been created")
@@ -70,10 +72,13 @@ def get_db_version():
     return version
 
 
-def get_data_config(value):
+def get_data_config(value=None):
     try:
         with open(f'{config_folder}/config.json', 'r') as f:
             data = json.load(f)
+
+        if value is None:
+            return data
 
         return data[value]
 
@@ -244,6 +249,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.applications = None
         self.default_icon = None
         self.timestamp = None
+        self.folder = None
         self.task = None
         self.state_task = False
         self.state = 'home'
@@ -273,25 +279,34 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.last_update_version_db.setText(last_get_db_update)
 
         log.debug("Connecting signals")
+        # Check Updates
         self.check_version.clicked.connect(self.new_version)
         self.check_db_version.clicked.connect(self.new_db_version)
 
+        # Buttons Home Menu
         self.button_home.clicked.connect(self.switch_homePage)
         self.button_full_home.clicked.connect(self.switch_homePage)
 
+        # Buttons Backup Menu
         self.button_backup.clicked.connect(self.switch_backupPage)
         self.button_full_backup.clicked.connect(self.switch_backupPage)
 
+        # Buttons Report Menu
         self.button_reports.clicked.connect(self.switch_reportPage)
         self.button_full_reports.clicked.connect(self.switch_reportPage)
 
+        # Buttons Settings Menu
         self.button_settings.clicked.connect(self.switch_settingsPage)
         self.button_full_settings.clicked.connect(self.switch_settingsPage)
 
+        # Buttons About Menu
         self.button_about.clicked.connect(self.switch_aboutPage)
         self.button_full_about.clicked.connect(self.switch_aboutPage)
 
+        # Buttons Task Page
         self.new_task.clicked.connect(self.switch_taskPage)
+
+        self.name_task.textChanged.connect(self.update_folder_task)
 
         self.apps_list.itemChanged.connect(self.list_dotfiles)
         self.level_spin.valueChanged.connect(self.change_level)
@@ -303,6 +318,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.button_add.clicked.connect(self.save_task)
         self.button_cancel.clicked.connect(self.cancel_task)
+
+        # Buttons Config Page
+        self.button_save.clicked.connect(self.save_config)
+        self.button_reload.clicked.connect(self.reload_config)
 
         self.load_info()
 
@@ -362,6 +381,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             log.debug("Settings page")
 
             self.stackedWidget.setCurrentIndex(3)
+            self.load_config()
+
 
     def switch_aboutPage(self):
         if self.state != 'about':
@@ -379,6 +400,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         log.debug("Task status changes to %s", self.state_task)
 
         self.load_apps()
+
+        path = get_data_config("default_path")
+        if path is None:
+            path = os.path.expanduser("~")
+
+        self.folder = path
+        self.folder_task.setText(path)
 
     def load_info(self):
         log.debug("Loading information home page")
@@ -428,6 +456,19 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 widget = git
 
             show_tasks(task, widget)
+
+    def load_config(self):
+        # Carga configuracion
+        config = get_data_config()
+
+        # Compruba si tiene una ruta por defecto en config
+        if config.get("default_path"):
+            self.folder_default.setText(config["default_path"])
+
+        else:
+            # obtiene la ruta del usuario
+            user_path = os.path.expanduser("~") + "/dotfiles"
+            self.folder_default.setText(user_path)
 
     def remove_widgets_task(self):
         if not self.task_scrollarea.layout().isEmpty():
@@ -528,6 +569,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         log.debug("Loaded applications: %s", self.applications.keys())
         self.addAppsToList(self.applications.keys())
 
+    def update_folder_task(self):
+        name = self.name_task.text()
+        if name:
+            folder = self.folder + "/" + name
+            self.folder_task.setText(folder)
+
+        else:
+            self.folder_task.setText(self.folder)
+
     def list_dotfiles(self):
         log.debug("Listing configuration files")
         self.dotfiles_list.clear()
@@ -607,9 +657,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if self.timestamp is None:
             self.timestamp = QDateTime.currentDateTime().toSecsSinceEpoch()
 
-        log.debug("Timestamp: %s", self.timestamp)
-        log.debug("Collecting data")
-
         name = self.name_task.text()
         folder = self.folder_task.text()
         icon = self.default_icon
@@ -634,14 +681,50 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             }
         }
 
-        data = load_task_file()
-        data.update(task)
-        save_task_file(data)
+        if not name or not folder or not files:
+            log.error("Missing data")
+            QMessageBox.warning(self, "Missing data", "Please fill in all the fields", QMessageBox.Ok)
 
-        log.info("Task saved: %s", task[self.timestamp]["name"])
+        else:
+            log.debug("Timestamp: %s", self.timestamp)
+            log.debug("Collecting data")
 
-        self.clear_fields()
-        self.switch_backupPage()
+            data = load_task_file()
+            data.update(task)
+            save_task_file(data)
+
+            log.info("Task saved: %s", task[self.timestamp]["name"])
+
+            self.clear_fields()
+            self.switch_backupPage()
+
+    def save_config(self):
+        log.info("Saving configuration")
+        default_path = self.folder_default.text()
+
+        def save():
+            save_data_config("default_path", default_path)
+            log.info("Configuration saved")
+
+        if not os.path.exists(default_path):
+            reply = QMessageBox.question(self, 'Folder not found',
+                                         f"The folder does not exist, do you want to create it?",
+                                         QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+
+            if reply == QMessageBox.Yes:
+                os.makedirs(default_path)
+                log.info("Folder created")
+                save()
+
+            else:
+                log.info("Folder not created")
+
+        else:
+            save()
+
+    def reload_config(self):
+        log.info("Reload configuration")
+        self.load_config()
 
 
 if __name__ == '__main__':

@@ -789,9 +789,6 @@ class Ui_MainWindow(object):
 "	background-color: #28292a\n"
 "}\n"
 "\n"
-"QTabWidget {\n"
-"	background-color: #28292a\n"
-"}\n"
 "")
         self.verticalLayout_13 = QVBoxLayout(self.page_settings)
         self.verticalLayout_13.setObjectName(u"verticalLayout_13")
@@ -841,12 +838,51 @@ class Ui_MainWindow(object):
 
         self.tabWidget = QTabWidget(self.page_settings)
         self.tabWidget.setObjectName(u"tabWidget")
+        self.tabWidget.setStyleSheet(u"QWidget {\n"
+"	background-color: #28292a\n"
+"}\n"
+"\n"
+"QLineEdit {\n"
+"	background-color: #1d1e20;\n"
+"}\n"
+"")
         self.tabWidget.setTabPosition(QTabWidget.South)
         self.tabWidget.setTabShape(QTabWidget.Rounded)
         self.tabWidget.setUsesScrollButtons(True)
         self.tab_general = QWidget()
         self.tab_general.setObjectName(u"tab_general")
         self.tab_general.setAutoFillBackground(False)
+        self.widget = QWidget(self.tab_general)
+        self.widget.setObjectName(u"widget")
+        self.widget.setGeometry(QRect(10, 10, 321, 68))
+        self.verticalLayout_20 = QVBoxLayout(self.widget)
+        self.verticalLayout_20.setObjectName(u"verticalLayout_20")
+        self.verticalLayout_20.setContentsMargins(0, 0, 0, 0)
+        self.label = QLabel(self.widget)
+        self.label.setObjectName(u"label")
+
+        self.verticalLayout_20.addWidget(self.label)
+
+        self.horizontalLayout_13 = QHBoxLayout()
+        self.horizontalLayout_13.setObjectName(u"horizontalLayout_13")
+        self.folder_default = QLineEdit(self.widget)
+        self.folder_default.setObjectName(u"folder_default")
+
+        self.horizontalLayout_13.addWidget(self.folder_default)
+
+        self.select_folder_default = QPushButton(self.widget)
+        self.select_folder_default.setObjectName(u"select_folder_default")
+        icon13 = QIcon()
+        icon13.addFile(u":/icons/assets/folder_open.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        self.select_folder_default.setIcon(icon13)
+        self.select_folder_default.setIconSize(QSize(24, 24))
+        self.select_folder_default.setFlat(True)
+
+        self.horizontalLayout_13.addWidget(self.select_folder_default)
+
+
+        self.verticalLayout_20.addLayout(self.horizontalLayout_13)
+
         self.tabWidget.addTab(self.tab_general, "")
         self.tab_git = QWidget()
         self.tab_git.setObjectName(u"tab_git")
@@ -923,9 +959,9 @@ class Ui_MainWindow(object):
 
         self.button_cancel = QPushButton(self.buttons_backups_3)
         self.button_cancel.setObjectName(u"button_cancel")
-        icon13 = QIcon()
-        icon13.addFile(u":/icons/assets/cancel.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
-        self.button_cancel.setIcon(icon13)
+        icon14 = QIcon()
+        icon14.addFile(u":/icons/assets/cancel.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        self.button_cancel.setIcon(icon14)
         self.button_cancel.setIconSize(QSize(24, 24))
         self.button_cancel.setFlat(True)
 
@@ -994,9 +1030,9 @@ class Ui_MainWindow(object):
 
         self.button_icon = QPushButton(self.groupBox_6)
         self.button_icon.setObjectName(u"button_icon")
-        icon14 = QIcon()
-        icon14.addFile(u":/icons/assets/icon24x24.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
-        self.button_icon.setIcon(icon14)
+        icon15 = QIcon()
+        icon15.addFile(u":/icons/assets/icon24x24.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        self.button_icon.setIcon(icon15)
         self.button_icon.setIconSize(QSize(48, 48))
         self.button_icon.setFlat(True)
 
@@ -1022,9 +1058,7 @@ class Ui_MainWindow(object):
 
         self.button_folder = QPushButton(self.groupBox_6)
         self.button_folder.setObjectName(u"button_folder")
-        icon15 = QIcon()
-        icon15.addFile(u":/icons/assets/folder_open.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
-        self.button_folder.setIcon(icon15)
+        self.button_folder.setIcon(icon13)
         self.button_folder.setIconSize(QSize(24, 24))
         self.button_folder.setFlat(True)
 
@@ -1178,7 +1212,7 @@ class Ui_MainWindow(object):
 #endif // QT_CONFIG(statustip)
         self.button_home.setText("")
 #if QT_CONFIG(statustip)
-        self.button_backup.setStatusTip(QCoreApplication.translate("MainWindow", u"Backups", None))
+        self.button_backup.setStatusTip(QCoreApplication.translate("MainWindow", u"Tasks", None))
 #endif // QT_CONFIG(statustip)
         self.button_backup.setText("")
 #if QT_CONFIG(statustip)
@@ -1205,9 +1239,9 @@ class Ui_MainWindow(object):
 #endif // QT_CONFIG(statustip)
         self.button_full_home.setText(QCoreApplication.translate("MainWindow", u"Home", None))
 #if QT_CONFIG(statustip)
-        self.button_full_backup.setStatusTip(QCoreApplication.translate("MainWindow", u"Backups", None))
+        self.button_full_backup.setStatusTip(QCoreApplication.translate("MainWindow", u"Tasks", None))
 #endif // QT_CONFIG(statustip)
-        self.button_full_backup.setText(QCoreApplication.translate("MainWindow", u"Backups", None))
+        self.button_full_backup.setText(QCoreApplication.translate("MainWindow", u"Tasks", None))
 #if QT_CONFIG(statustip)
         self.button_full_reports.setStatusTip(QCoreApplication.translate("MainWindow", u"Reports", None))
 #endif // QT_CONFIG(statustip)
@@ -1337,6 +1371,7 @@ class Ui_MainWindow(object):
 #if QT_CONFIG(statustip)
         self.tab_general.setStatusTip(QCoreApplication.translate("MainWindow", u"Settings - General", None))
 #endif // QT_CONFIG(statustip)
+        self.label.setText(QCoreApplication.translate("MainWindow", u"Folder default", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_general), QCoreApplication.translate("MainWindow", u"General", None))
 #if QT_CONFIG(statustip)
         self.tab_git.setStatusTip(QCoreApplication.translate("MainWindow", u"Settings - Git", None))
