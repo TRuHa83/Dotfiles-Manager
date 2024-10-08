@@ -5,7 +5,7 @@ import subprocess
 from time import strftime
 
 
-def calcular_checksum(archivo, algoritmo="sha256"):
+def checksum(archivo, algoritmo="sha256"):
     # Crear un objeto hash usando el algoritmo especificado
     hash_func = hashlib.new(algoritmo)
 
@@ -36,7 +36,7 @@ def git(task):
         checksums = task["checksums"]
         # Verificar si los archivos han cambiado
         for file in files:
-            if calcular_checksum(file, "md5") != checksums[file]:
+            if checksum(file, "md5") != checksums[file]:
                 print(f"El archivo {file} ha cambiado")
                 break
         else:
@@ -63,7 +63,7 @@ def git(task):
     # Generar checksum de archivos para poder determinar cuando cambian
     checksums = {}
     for file in files:
-        checksums[file] = calcular_checksum(file, "md5")
+        checksums[file] = checksum(file, "md5")
 
     return checksums
 
