@@ -6,7 +6,7 @@ import logging as log
 
 import requests
 
-from Engine import Search
+from Engine import Search, Task
 from version import __version__
 from widgets.task_widget import Ui_Form
 from ui.main_window import Ui_MainWindow
@@ -179,17 +179,19 @@ class TaskWidget(QWidget, Ui_Form):
         self.time = list(task.keys())[0]
         self.data = task[self.time]
 
+        self.status = {
+            "Waiting": "#F19E39",
+            "Running": "#78A75A",
+            "Succeeded": "#5985E1",
+            "Failed": "#EA3323"
+        }
+
         icon = QIcon()
         img = self.data["icon"]
         icon.addFile(img, QSize(), QIcon.Mode.Normal, QIcon.State.Off)
 
         self.icon_widget.setIcon(icon)
         self.icon_widget.setIconSize(QSize(48, 48))
-
-        self.label_name.setText(self.data["name"])
-
-        timestamp = QDateTime.fromSecsSinceEpoch(int(self.time))
-        self.label_create.setText(timestamp.toString("yyyy/MM/dd hh:mm"))
 
         self.menu = QMenu(self)
 
@@ -207,8 +209,52 @@ class TaskWidget(QWidget, Ui_Form):
         self.button_start_backup.clicked.connect(self.start_backup)
         self.button_retore.clicked.connect(self.restore)
 
+        self.load_info()
+
+    def load_info(self):
+        self.label_name.setText(self.data["name"])
+
+        timestamp = QDateTime.fromSecsSinceEpoch(int(self.time))
+        self.label_create.setText(timestamp.toString("yyyy/MM/dd hh:mm"))
+        self.label_folder.setText(self.data["folder"])
+
+        state = self.data["status"]
+        if state is None or not Task.check_checksum(self.data["checksums"]):
+            state = "Waiting"
+
+        self.label_status.setText(state)
+        self.label_status.setStyleSheet(f"color: {self.status[state]}")
+        self.label_mode.setText(self.data["mode"])
+        self.label_last_run.setText(self.data["last_run"])
+
     def start_backup(self):
         log.info("Start backup: %s", self.time)
+
+        state = "Running"
+        self.label_status.setText(state)
+        self.label_status.setStyleSheet(f"color: {self.status[state]}")
+        self.label_status.repaint()
+
+        checksum = Task.run(self.data)
+
+        self.data["last_run"] = QDateTime.currentDateTime().toString("yyyy/MM/dd hh:mm")
+        self.data["status"] = "Succeeded" if checksum else "Failed"
+
+        state = "Succeeded"
+        self.label_status.setText(state)
+        self.label_status.setStyleSheet(f"color: {self.status[state]}")
+
+        if not checksum:
+            state = "Failed"
+            self.label_status.setText(state)
+            self.label_status.setStyleSheet(f"color: {self.status[state]}")
+
+        else:
+            self.data["checksums"] = checksum
+
+        data = load_task_file()
+        data[self.time] = self.data
+        save_task_file(data)
 
     def restore(self):
         print("Restore")
@@ -382,7 +428,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
             self.stackedWidget.setCurrentIndex(3)
             self.load_config()
-
 
     def switch_aboutPage(self):
         if self.state != 'about':
@@ -652,6 +697,20 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.clear_fields()
         self.switch_backupPage()
 
+    def create_folder(self, path):
+        reply = QMessageBox.question(self, 'Folder not found',
+                                     f"The folder does not exist, do you want to create it?",
+                                     QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+
+        if reply == QMessageBox.Yes:
+            os.makedirs(path)
+            log.info("Folder created")
+            return True
+
+        else:
+            log.info("Folder not created")
+            return False
+
     def save_task(self):
         log.info("Saving task")
         if self.timestamp is None:
@@ -677,7 +736,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 "mode": mode,
                 "level": level,
                 "apps": apps,
-                "files": files
+                "files": files,
+                "last_run": "Never",
+                "status": None,
+                "checksums": None
             }
         }
 
@@ -685,7 +747,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             log.error("Missing data")
             QMessageBox.warning(self, "Missing data", "Please fill in all the fields", QMessageBox.Ok)
 
-        else:
+        def save():
             log.debug("Timestamp: %s", self.timestamp)
             log.debug("Collecting data")
 
@@ -698,6 +760,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.clear_fields()
             self.switch_backupPage()
 
+        if not os.path.exists(folder):
+            if self.create_folder(folder):
+                log.info("Folder created")
+                save()
+
+        else:
+            save()
+
     def save_config(self):
         log.info("Saving configuration")
         default_path = self.folder_default.text()
@@ -707,17 +777,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             log.info("Configuration saved")
 
         if not os.path.exists(default_path):
-            reply = QMessageBox.question(self, 'Folder not found',
-                                         f"The folder does not exist, do you want to create it?",
-                                         QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
-
-            if reply == QMessageBox.Yes:
-                os.makedirs(default_path)
-                log.info("Folder created")
+            if self.create_folder(default_path):
                 save()
-
-            else:
-                log.info("Folder not created")
 
         else:
             save()
