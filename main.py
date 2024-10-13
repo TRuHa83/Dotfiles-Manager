@@ -6,8 +6,8 @@ import logging as log
 
 import requests
 
-from Engine import Search, Task
 from version import __version__
+from Engine import Search, Git, Tools
 from widgets.task_widget import Ui_Form
 from ui.main_window import Ui_MainWindow
 
@@ -219,7 +219,8 @@ class TaskWidget(QWidget, Ui_Form):
         self.label_folder.setText(self.data["folder"])
 
         state = self.data["status"]
-        if state is None or not Task.check_checksum(self.data["checksums"]):
+
+        if self.data["checksums"] is None or any(Tools.check_file(file, self.data["checksums"][file]) for file in self.data["checksums"]):
             state = "Waiting"
 
         self.label_status.setText(state)
@@ -235,7 +236,11 @@ class TaskWidget(QWidget, Ui_Form):
         self.label_status.setStyleSheet(f"color: {self.status[state]}")
         self.label_status.repaint()
 
-        checksum = Task.run(self.data)
+        if self.data["mode"] == "backup":
+            pass
+
+        else:
+            checksum = Git.run(self.data)
 
         self.data["last_run"] = QDateTime.currentDateTime().toString("yyyy/MM/dd hh:mm")
         self.data["status"] = "Succeeded" if checksum else "Failed"
@@ -243,6 +248,7 @@ class TaskWidget(QWidget, Ui_Form):
         state = "Succeeded"
         self.label_status.setText(state)
         self.label_status.setStyleSheet(f"color: {self.status[state]}")
+        self.label_last_run.setText(self.data["last_run"])
 
         if not checksum:
             state = "Failed"
@@ -251,6 +257,9 @@ class TaskWidget(QWidget, Ui_Form):
 
         else:
             self.data["checksums"] = checksum
+
+
+        os.chdir(work_folder)
 
         data = load_task_file()
         data[self.time] = self.data
